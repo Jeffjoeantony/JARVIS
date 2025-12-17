@@ -1,0 +1,19 @@
+# Virtual env
+jarvis_env/
+
+# Python
+__pycache__/
+*.pyc
+
+# Audio
+*.wav
+*.mp3
+
+# Secrets
+.env
+
+# Models (recommended)
+models/
+piper/
+*.onnx
+*.pt

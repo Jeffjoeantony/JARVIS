@@ -1,0 +1,7 @@
+pvporcupine
+pyaudio
+faster-whisper
+ollama
+TTS
+sounddevice
+numpy
