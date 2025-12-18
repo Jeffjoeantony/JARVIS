@@ -8,6 +8,9 @@ from tts.speak import speak
 from commands.system_commands import open_chrome
 from commands.system_commands import open_spotify
 from commands.system_commands import play_song
+from commands.location import get_location
+from commands.weather import get_weather
+from tts.speak import speak, stop_speaking
 
 
 PORCUPINE_ACCESS_KEY = "EM/8PrzGu3j2UUijZq0Jvb6tBspQ8uNIGn8AQXCkEf03ShOn7UgZkg=="
@@ -75,11 +78,57 @@ def main():
                 if not success:
                     speak("Sorry, I could not find that song.")
                 continue
+            
+            if "location" in text or "where am i" in text:
+                speak(get_location())
+                continue
+            
+            if "weather" in text:
+                city, region, country = None, None, None
 
+                # get location
+                location_text = get_location()
+
+                # extract city from location text
+                city = location_text.split("in ")[1].split(",")[0]
+
+                weather = get_weather(city)
+
+                if weather:
+                    speak(f"In {city}, {weather}")
+                else:
+                    speak("Sorry, I could not fetch the weather right now.")
+
+                continue
+
+            
+            brief_keywords = [
+                "brief me about",
+                "brief about",
+                "in short",
+                "short explanation",
+                "what do you know about",
+                "tell me briefly"
+            ]
+
+            is_brief = any(kw in text for kw in brief_keywords)
 
             # 🧠 AI RESPONSE
-            response = ask_llm(user_input)
+            # response = ask_llm(user_input)
+            # speak(response)
+            if is_brief:
+                response = ask_llm(user_input, mode="brief")
+            else:
+                response = ask_llm(user_input)
+
             speak(response)
+
+            # If user interrupted speech, immediately listen again
+            if stop_speaking:
+                print("🔁 Speech interrupted by user")
+                continue
+
+
             
 if __name__ == "__main__":
     try:
