@@ -1,36 +1,31 @@
 import requests
 
-COUNTRY_MAP = {
-    "IN": "India"
-}
+def get_location():
+    try:
+        data = requests.get("https://ipinfo.io/json", timeout=5).json()
 
-def get_location(raw=False):
-    r = requests.get("https://ipinfo.io/json", timeout=5)
-    data = r.json()
+        loc = data.get("loc")  # "lat,long"
+        if not loc:
+            return "I could not determine your location."
 
-    city = data.get("city")
-    region = data.get("region")
-    country_code = data.get("country")
+        lat, lon = loc.split(",")
 
-    print("DEBUG LOCATION:", city, region, country_code)  # 👈 TEMP DEBUG
+        geo = requests.get(
+            f"https://nominatim.openstreetmap.org/reverse",
+            params={
+                "lat": lat,
+                "lon": lon,
+                "format": "json"
+            },
+            headers={"User-Agent": "jarvis"}
+        ).json()
 
-    country = COUNTRY_MAP.get(country_code, country_code)
+        address = geo.get("address", {})
+        city = address.get("city") or address.get("town") or address.get("village")
+        state = address.get("state")
+        country = address.get("country")
 
-    if raw:
-        return city, region, country
+        return f"You are approximately in {city}, {state}, {country}."
 
-    return f"You are currently in {city}, {region}, {country}."
-
-
-
-
-
-# import requests
-
-# def get_location():
-#     try:
-#         r = requests.get("https://ipinfo.io/json", timeout=5)
-#         data = r.json()
-#         return f"You are currently in {data['city']}, {data['region']}, {data['country']}."
-#     except:
-#         return "I could not determine your location."
+    except:
+        return "I could not determine your location."

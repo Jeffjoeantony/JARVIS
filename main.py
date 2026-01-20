@@ -11,7 +11,7 @@ from commands.system_commands import play_song
 from commands.location import get_location
 from commands.weather import get_weather
 from tts.speak import speak, stop_speaking
-
+from rapidfuzz import fuzz
 
 PORCUPINE_ACCESS_KEY = "EM/8PrzGu3j2UUijZq0Jvb6tBspQ8uNIGn8AQXCkEf03ShOn7UgZkg=="
 PPN_PATH = "wakeword/jarvis.ppn"
@@ -63,8 +63,10 @@ def main():
                 open_chrome()
                 continue
 
-            # OPEN SPOTIFY
-            if "open spotify" in text:
+            def is_spotify_command(text):
+                return fuzz.partial_ratio(text, "spotify") > 70
+
+            if is_spotify_command(text):
                 speak("Opening Spotify.")
                 open_spotify()
                 continue
@@ -72,12 +74,16 @@ def main():
             # PLAY SONG ON SPOTIFY
             if text.startswith("play"):
                 song = text.replace("play", "").strip()
+            
+                open_spotify()  # 🔴 REQUIRED
                 speak(f"Playing {song} on Spotify.")
+            
                 success = play_song(song)
-
+            
                 if not success:
                     speak("Sorry, I could not find that song.")
                 continue
+            
             
             if "location" in text or "where am i" in text:
                 speak(get_location())
